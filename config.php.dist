@@ -1,0 +1,21 @@
+
+<?php
+
+//
+// Template config file
+// ====================
+//
+// Copy this file to config.php and set all parameters accordingly
+//
+
+$BankCode               = "5500";
+$BankCountryID          = "CZ";
+$BankName               = "Raiffeisenbank a. s.";
+$AccNoID                = "1234567890";                 // Number of your bank account
+$AccNoCC                = "";
+$AccName                = "Name of account";            // Name of the account
+$AccCcy                 = "CZK";                        // Currency code (ie CZK)
+$AccCcyText             = "Koruna česká";               // Name of currency (ie Koruna česká)
+$ChargesCcy             = "CZK";                        // DOnt remebmer :) (ie CZK)
+
+?>
