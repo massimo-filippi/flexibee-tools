@@ -14,8 +14,6 @@ Other resources:
 http://www.abclinuxu.cz/blog/doli/2012/4/konverze-bankovnich-vypisu-rb-do-formatu-abo
 
 ToDo:
-- Add support for CLI parameters
-- Add output file option
 - Add UI - ie https://www.sveinbjorn.org/platypus
 - Remove first empty line in output file
 
@@ -43,6 +41,7 @@ Usage:
 */
 
 
+
 // User specific settings
 
 $BankCode               = "5500";
@@ -56,10 +55,53 @@ $AccCcyText             = "Koruna česká";               // Name of currency (i
 $ChargesCcy             = "CZK";                        // DOnt remebmer :) (ie CZK)
 
 
+
 // Include values from config file, if exists
 
 if(file_exists('config.php'))
     include 'config.php';
+
+
+
+// Options parsing
+
+$shortopts  = "";
+$shortopts .= "d";       // Display output
+$shortopts .= "h";       // Help, do not accept values
+$shortopts .= "i:";      // Input file, value required
+$shortopts .= "o:";      // Output file, value required
+$shortopts .= "x";       // Disable writing to output file
+
+$options = getopt($shortopts);
+// var_dump($options);
+
+
+
+// Write Help
+
+if (array_key_exists("h", $options)) {
+    echo "Use ./" . basename(__FILE__) . " -d for help\n\n";
+    echo "rb2fb\n";
+    echo "=====\n";
+    echo "\n";
+    echo "This tool will convert Raiffeisenbank eKonto payments (exportable as CVS) to FlexiBee XML file format, which can be imported into XML.\n";
+    echo "Without this tool, you're forced to install and use Raiffeisenbank's tool eKomunikátor, which is both pricey and very cumbersome.\n";
+    echo "Homepage: https://github.com/massimo-filippi/flexibee-tools\n";
+    echo "More info about FlexiBee: https://www.flexibee.eu/\n";
+    echo "\n";
+    echo "Usage\n";
+    echo "-----\n";
+    echo "./rb2fb.php [-options] [-i file] [-o file]\n";
+    echo "-d                      send output to stdout instead of file (if used, there will be no sucess info in output)\n";
+    echo "-h                      show this help\n";
+    echo "-i                      specify input file, CSV file downloaded from eKonka. Default = import.csv\n";
+    echo "-o                      specify output file, XML suitable for importing into FlexiBee. Default = output.xml\n";
+    echo "-x                      disable writing to output file\n";
+    echo "\n";
+
+    exit();
+}
+
 
 
 // Deine constants (CSV offsets)
@@ -140,7 +182,33 @@ function w1250_to_utf8($text) {
 
 // Main code
 
-if (($handle = fopen("import.csv", "r")) !== FALSE) {
+// Set input file
+if (array_key_exists("i", $options)) {
+    // Use file specifiled in command parameter -i
+    $filename_input = $options["i"];
+} else {
+    // Use default filename
+    $filename_input = "import.csv";
+}
+
+// Set output file
+if (array_key_exists("o", $options)) {
+    // Use file specifiled in command parameter -o
+    $filename_output = $options["o"];
+} else {
+    // Use default filename
+    $filename_output = "output.xml";
+}
+
+
+if (($handle = @fopen($filename_input, "r")) == FALSE) {
+
+    // Handle file open error
+    echo "Error, cannot open input file: " . $filename_input . "\n";
+    echo "Use ./" . basename(__FILE__) . " -d for help\n\n";
+    exit();
+
+} else {
 
     $out  = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     $out .= "<!-- This file stores exported account movements from Gemini/CS 5 application. -->\n";
@@ -153,25 +221,18 @@ if (($handle = fopen("import.csv", "r")) !== FALSE) {
     // $out .= " StatemDebitCount='10'\n";
     // $out .= " StatemCreditCount='3'\n";
     $out .= ">";
-
     // skip the first line of csv (header row)
     $data = fgetcsv($handle, 1000, ";");
-
     for ($row = 1; ($data = fgetcsv($handle, 1000, ";")) !== FALSE; $row++) {
-
         // Convert Win1250 to UTF 8
         foreach ($data as &$text) {
-          $text = w1250_to_utf8($text);
+            $text = w1250_to_utf8($text);
         }
-
         // Date string refarmating
         $date = date_parse_from_format("j.n.Y",$data[DATUM]);
         $date_formated = $date[year].sprintf("%02d", $date[month]).sprintf("%02d", $date[day]);
-
         $date_valute = date_parse_from_format("j.n.Y",$data[VALUTA]);
         $date_valute_formated = $date_valute[year].sprintf("%02d", $date_valute[month]).sprintf("%02d", $date_valute[day]);
-
-
         // XML construction loop
         $out .= "   <Movement ItemNo='".$data[KOD_TRANSAKCE]."'\n";
         $out .= "          Amount='".ltrim($data[CASTKA],"-")."'\n";                                                           // Strip minus sign
@@ -215,14 +276,44 @@ if (($handle = fopen("import.csv", "r")) !== FALSE) {
         // $out .= "       <Description7></Description7>\n";
         // $out .= "       <Description8></Description8>\n";
         $out .= "   </Movement>\n";
-
     }
+    $out  .= "</AccountMovements>\n";
 
+    // Close input file
     fclose($handle);
 
-    $out  .= "</AccountMovements>\n";
-    echo $out;
 
+
+    // Set output file (only when -x is not used)
+    if (!array_key_exists("x", $options)) {
+        if (array_key_exists("o", $options)) {
+            // Use filename specifiled in command parameter -o
+            $filename_output = $options["o"];
+        } else {
+            // Use default filename
+            $filename_output = "output.xml";
+        }
+        // Handle file output
+        if (@file_put_contents($filename_output,$out)) {
+            // File written succesfully
+            if (!array_key_exists("d", $options)) {
+                // Write success info, but only when -d is not used
+                echo "Succesfully converted into file: " . $filename_output . "\n\n";
+            }
+        } else {
+            // File write failed
+            echo "Error, cannot write to output file: " . $filename_input . "\n";
+            echo "Use ./" . basename(__FILE__) . " -d for help\n\n";
+            exit();
+        }
+    }
+
+
+    // Handle display output
+    if (array_key_exists("d", $options)) {
+        // Display output IS turned on
+        echo $out;
+    }
 }
 
 ?>
