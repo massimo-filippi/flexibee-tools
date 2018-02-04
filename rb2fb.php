@@ -17,6 +17,7 @@ ToDo:
 - Add support for CLI parameters
 - Add output file option
 - Add UI - ie https://www.sveinbjorn.org/platypus
+- Remove first empty line in output file
 
 
 Usage:
@@ -24,7 +25,20 @@ Usage:
 - Set all parameters in section bellow (User specific settings)
 - Export file from RB / eKonto via: Historie účtu / Pohyby na účtu / Formát CSV (button under the listing)
 - Rename CSV file to import.csv and put it into same solder as this script
-- Run: ./rb2fb.php > output.txt
+- Run: ./rb2fb.php > output.xml
+- In FlexiBee
+-- First setup
+--- Menu: Peníze / Seznam bankovních účtů, vybrat účet, Změnit (tlačítko)
+--- Elektronická banka (záložka)
+---- Formát: Gemnini XML
+---- Název klienta: RB2FB (třeba)
+---- výpisy: nastavit adresář, kam budeme dávat výpisy (generované tímto konvertorem)
+---- přípona: xml
+---- Kontrolovat duplicitu výpisů: Ignorovat již načtené položky
+---- Uložit a zavřít (tlačítko)
+-- Import
+--- Menu: Peníze / Banka
+--- Button: Služby / Načíst výpisy
 
 */
 
