@@ -80,7 +80,7 @@ $options = getopt($shortopts);
 // Write Help
 
 if (array_key_exists("h", $options)) {
-    echo "Use ./" . basename(__FILE__) . " -d for help\n\n";
+    echo "Use ./" . basename(__FILE__) . " -h for help\n\n";
     echo "rb2fb\n";
     echo "=====\n";
     echo "\n";
