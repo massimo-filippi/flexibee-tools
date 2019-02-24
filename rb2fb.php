@@ -106,6 +106,27 @@ if (array_key_exists("h", $options)) {
 
 // Deine constants (CSV offsets)
 
+const DATUM_PROVEDENI         = 0;      // Dříve DATUM
+const DATUM_ZAUCTOVANI        = 1;
+const CISLO_UCTU              = 2;      // Číslo našeho účtu
+const NAZEV_UCTU              = 3;
+const KATEGORIE_TRANSAKCE     = 4;      // Dříve nebylo
+const CISLO_PROTIUCTU         = 5;      // Dříve CISLO_UCTU
+const NAZEV_PRPOTIUCTU        = 6;      // Dříve NAZEV_UCTU
+const TYP_TRANSAKCE           = 7;      // Dříve TYP
+const ZPRAVA                  = 8;      // Dříve poznámka
+const POZNAMKA                = 9;      // Vypada v CSV identicky s polem ZPRAVA
+const VARIABILNI_SYMBOL       = 10;
+const KONSTANTNI_SYMBOL       = 11;
+const SPECIFICKY_SYMBOL       = 12;
+const ZAUCTOVANA_CASTKA       = 13;     // Dříve CASTKA
+const MENA_UCTU               = 14;
+const PUVODNI_CASTKA_A_MENA_1 = 15;
+const PUVODNI_CASTKA_A_MENA_2 = 16;
+const POPLATEK                = 17;
+const ID_TRANSAKCE            = 18;     // Dříve KOD_TRANSAKCE
+
+/* Old values = eKonto blue
 const DATUM             = 0;
 const CAS               = 1;
 const POZNAMKA          = 2;
@@ -122,7 +143,7 @@ const CASTKA            = 12;
 const POPLATEK          = 13;
 const SMENA             = 14;
 const ZPRAVA            = 15;
-
+*/
 
 
 // Convert Win 1250 > UTF-8
@@ -175,7 +196,7 @@ function w1250_to_utf8($text) {
         chr(0xB7) => '&middot;',
         chr(0xBB) => '&raquo;',
     );
-    return html_entity_decode(mb_convert_encoding(strtr($text, $map), 'UTF-8', 'ISO-8859-2'), ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars(html_entity_decode(mb_convert_encoding(strtr($text, $map), 'UTF-8', 'ISO-8859-2'), ENT_QUOTES, 'UTF-8'));
 }
 
 
@@ -229,18 +250,18 @@ if (($handle = @fopen($filename_input, "r")) == FALSE) {
             $text = w1250_to_utf8($text);
         }
         // Date string refarmating
-        $date = date_parse_from_format("j.n.Y",$data[DATUM]);
+        $date = date_parse_from_format("j.n.Y",$data[DATUM_PROVEDENI]);
         $date_formated = $date[year].sprintf("%02d", $date[month]).sprintf("%02d", $date[day]);
-        $date_valute = date_parse_from_format("j.n.Y",$data[VALUTA]);
+        $date_valute = date_parse_from_format("j.n.Y",$data[DATUM_PROVEDENI]);
         $date_valute_formated = $date_valute[year].sprintf("%02d", $date_valute[month]).sprintf("%02d", $date_valute[day]);
         // XML construction loop
-        $out .= "   <Movement ItemNo='".$data[KOD_TRANSAKCE]."'\n";
-        $out .= "          Amount='".ltrim($data[CASTKA],"-")."'\n";                                                           // Strip minus sign
-        $out .= "          Direction='" . (substr($data[CASTKA],0,1) == "-" ? "D" : "C") . "'\n";                              // D = Debet C = Credit
-        $out .= "          PostingDate='".$date_formated."'>\n";                                                               // Date formated as: 20170217
-        $out .= "       <PartnerAccNo>".strstr($data[CISLO_UCTU],"/",true)."</PartnerAccNo>\n";                                // Parse part before slash: 190842040287
-        $out .= "       <PartnerAccBank>".substr($data[CISLO_UCTU],strpos($data[CISLO_UCTU], "/")+1)."</PartnerAccBank>\n";    // Parse part after slash: 0100
-        $out .= "       <PartnerAccName>".$data[NAZEV_UCTU]."</PartnerAccName>\n";
+        $out .= "   <Movement ItemNo='".$data[ID_TRANSAKCE]."'\n";
+        $out .= "          Amount='".ltrim($data[ZAUCTOVANA_CASTKA],"-")."'\n";                                                          // Strip minus sign
+        $out .= "          Direction='" . (substr($data[ZAUCTOVANA_CASTKA],0,1) == "-" ? "D" : "C") . "'\n";                             // D = Debet C = Credit
+        $out .= "          PostingDate='".$date_formated."'>\n";                                                                         // Date formated as: 20170217
+        $out .= "       <PartnerAccNo>".strstr($data[CISLO_PROTIUCTU],"/",true)."</PartnerAccNo>\n";                                     // Parse part before slash: 190842040287
+        $out .= "       <PartnerAccBank>".substr($data[CISLO_PROTIUCTU],strpos($data[CISLO_PROTIUCTU], "/")+1)."</PartnerAccBank>\n";    // Parse part after slash: 0100
+        $out .= "       <PartnerAccName>".$data[NAZEV_PRPOTIUCTU]."</PartnerAccName>\n";
         $out .= "       <ValueDate>".$date_valute_formated."</ValueDate>\n";
         // $out .= "       <PartnerValueDate></PartnerValueDate>\n";
         // $out .= "       <PayAmount>9,99</PayAmount>\n";
@@ -249,25 +270,25 @@ if (($handle = @fopen($filename_input, "r")) == FALSE) {
         $out .= "       <ChargesCcy>".$ChargesCcy."</ChargesCcy>\n";
         // $out .= "       <CancelIndicator>0</CancelIndicator>\n";
         // $out .= "       <GeminiRef></GeminiRef>\n";
-        $out .= "       <BankRef>".$data[KOD_TRANSAKCE]."</BankRef>\n";
+        $out .= "       <BankRef>".$data[ID_TRANSAKCE]."</BankRef>\n";
         // $out .= "       <ClientRef></ClientRef>\n";
-        $out .= "       <MovementTypeText>".$data[TYP]."</MovementTypeText>\n";
-        $out .= "       <BankCode>".$BankCode."</BankCode>\n";
-        $out .= "       <BankCountryID>".$BankCountryID."</BankCountryID>\n";
-        $out .= "       <BankName>".$BankName."</BankName>\n";
-        $out .= "       <AccNoID>".$AccNoID."</AccNoID>\n";
-        $out .= "       <AccNoCC>".$AccNoCC."</AccNoCC>\n";
-        $out .= "       <AccName>".$AccName."</AccName>\n";
-        $out .= "       <AccCcy>".$AccCcy."</AccCcy>\n";
-        $out .= "       <AccCcyText>".$AccCcyText."</AccCcyText>\n";
+        $out .= "       <MovementTypeText>".$data[TYP_TRANSAKCE]                                       ."</MovementTypeText>\n";
+        $out .= "       <BankCode>".        substr($data[CISLO_UCTU],strpos($data[CISLO_UCTU], "/")+1) ."</BankCode>\n";              // Parse part after slash: 0100
+        $out .= "       <BankCountryID>".   $BankCountryID                                             ."</BankCountryID>\n";
+        $out .= "       <BankName>".        $BankName                                                  ."</BankName>\n";
+        $out .= "       <AccNoID>".         strstr($data[CISLO_UCTU],"/",true)                         ."</AccNoID>\n";               // Parse part before slash: 190842040287
+        $out .= "       <AccNoCC>".         $AccNoCC                                                   ."</AccNoCC>\n";
+        $out .= "       <AccName>".         $data[NAZEV_UCTU]                                          ."</AccName>\n";
+        $out .= "       <AccCcy>".          $data[MENA_UCTU]                                           ."</AccCcy>\n";
+        $out .= "       <AccCcyText>".      $AccCcyText                                                ."</AccCcyText>\n";
         // $out .= "       <AccTypeID>1</AccTypeID>\n";
         // $out .= "       <AccTypeCode>001</AccTypeCode>\n";
         // $out .= "       <AccTypeText>Běžný účet</AccTypeText>\n";
-        $out .= "       <Statistics1>".sprintf("%010d", $data[KONSTANTNI_SYMBOL])."</Statistics1>\n";           // konstatní symbol, 10 znaků
-        $out .= "       <Statistics2>".sprintf("%010d", $data[VARIABILNI_SYMBOL])."</Statistics2>\n";           // variabilní symbol, 10 znaků
-        $out .= "       <Statistics3>".sprintf("%010d", $data[SPECIFICKY_SYMBOL])."</Statistics3>\n";           // specifický symbol, 10 znaků
-        $out .= "       <Statistics4></Statistics4>\n";           // platební titul, 10 znaků
-        $out .= "       <Description1>".$data[POZNAMKA]."</Description1>\n";
+        $out .= "       <Statistics1>".     sprintf("%010d", $data[KONSTANTNI_SYMBOL])                 ."</Statistics1>\n";           // konstatní symbol, 10 znaků
+        $out .= "       <Statistics2>".     sprintf("%010d", $data[VARIABILNI_SYMBOL])                 ."</Statistics2>\n";           // variabilní symbol, 10 znaků
+        $out .= "       <Statistics3>".     sprintf("%010d", $data[SPECIFICKY_SYMBOL])                 ."</Statistics3>\n";           // specifický symbol, 10 znaků
+        $out .= "       <Statistics4>".                                                                 "</Statistics4>\n";           // platební titul, 10 znaků
+        $out .= "       <Description1>".    $data[POZNAMKA]                                            ."</Description1>\n";
         // $out .= "       <Description2></Description2>\n";
         // $out .= "       <Description3></Description3>\n";
         // $out .= "       <Description4></Description4>\n";
