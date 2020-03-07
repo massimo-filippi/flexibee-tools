@@ -29,6 +29,7 @@ Pro větší firmy to zajisté není problém, nicméně pokud vám přijde divn
   * Přejít do modulu __Peníze / Banka__
   * Služby / __Načíst výpisy__
   * Služby / __Automatická tvorba spojení úhrady__, párovat dle vs a částky
+  * Návod na párování plateb zde: https://www.flexibee.eu/podpora/akademie/automaticke-parovani-rucni-parovani-sparovani-jedne-platby-vice-fakturam/
   * A mělo by to být :)
 
 Hodně štěstí  
