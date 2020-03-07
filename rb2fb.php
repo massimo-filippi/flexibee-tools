@@ -226,7 +226,7 @@ if (($handle = @fopen($filename_input, "r")) == FALSE) {
 
     // Handle file open error
     echo "Error, cannot open input file: " . $filename_input . "\n";
-    echo "Use ./" . basename(__FILE__) . " -d for help\n\n";
+    echo "Use ./" . basename(__FILE__) . " -h for help\n\n";
     exit();
 
 } else {
@@ -251,9 +251,9 @@ if (($handle = @fopen($filename_input, "r")) == FALSE) {
         }
         // Date string refarmating
         $date = date_parse_from_format("j.n.Y",$data[DATUM_PROVEDENI]);
-        $date_formated = $date[year].sprintf("%02d", $date[month]).sprintf("%02d", $date[day]);
+        $date_formated = $date['year'].sprintf("%02d", $date['month']).sprintf("%02d", $date['day']);
         $date_valute = date_parse_from_format("j.n.Y",$data[DATUM_PROVEDENI]);
-        $date_valute_formated = $date_valute[year].sprintf("%02d", $date_valute[month]).sprintf("%02d", $date_valute[day]);
+        $date_valute_formated = $date_valute['year'].sprintf("%02d", $date_valute['month']).sprintf("%02d", $date_valute['day']);
         // XML construction loop
         $out .= "   <Movement ItemNo='".$data[ID_TRANSAKCE]."'\n";
         $out .= "          Amount='".ltrim($data[ZAUCTOVANA_CASTKA],"-")."'\n";                                                          // Strip minus sign
