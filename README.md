@@ -28,6 +28,7 @@ Pro větší firmy to zajisté není problém, nicméně pokud vám přijde divn
   * Přesunout soubor __output.xml__ vygenerovaný aplikací do složky výpisů, kterou jsme si nastavili ve FlexiBee
   * Přejít do modulu __Peníze / Banka__
   * Služby / __Načíst výpisy__
+  * Služby / __Automatická tvorba spojení úhrady__, párovat dle vs a částky
   * A mělo by to být :)
 
 Hodně štěstí  
